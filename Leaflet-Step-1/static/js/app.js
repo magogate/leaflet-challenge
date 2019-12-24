@@ -1,10 +1,17 @@
 
 var earthquakeData;
 
+// https://docs.mapbox.com/api/maps/#styles
 // Create the tile layer that will be the background of our map
+var grayscalemap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/tiles/256/{z}/{x}/{y}?access_token={accessToken}", {  
+  maxZoom: 18,
+  id: "mapbox.outdoors-v11",
+  accessToken: API_KEY
+});
+
 var lightmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/256/{z}/{x}/{y}?access_token={accessToken}", {  
   maxZoom: 18,
-  id: "mapbox.light",
+  id: "mapbox.light-v9",
   accessToken: API_KEY
 });
 
@@ -17,8 +24,9 @@ var satellite = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/satellite-v
 
 // Only one base layer can be shown at a time
 var baseMaps = {
-    Light: lightmap,
-    Dark: satellite
+    Satellite: satellite,
+    Outdoor: lightmap,
+    Grayscale: grayscalemap
   };
 
 
@@ -28,7 +36,7 @@ var baseMaps = {
         });
   
   // Add our 'lightmap' tile layer to the map
-  lightmap.addTo(map);
+  grayscalemap.addTo(map);
 //   satellite.addTo(map)
 
 
@@ -48,13 +56,11 @@ function getColor(d) {
 }
 
 d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson", function(data) {
-    console.log(data)
+    
     earthquakeData = data;
     for(let cnt=0; cnt < data.features.length; cnt++){
         const lat = earthquakeData.features[cnt]["geometry"]["coordinates"][0]
         const lng = earthquakeData.features[cnt]["geometry"]["coordinates"][1]
-        console.log(earthquakeData.features[cnt].properties.mag)
-        console.log(getColor(earthquakeData.features[cnt].properties.mag))
         earthQuakeMarkers.push(
             new L.circle([lng, lat], {
                 color: getColor(earthquakeData.features[cnt].properties.mag),
@@ -66,12 +72,38 @@ d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojs
             })
         )
             // }).addTo(map);
-    }//end of for    
+    }//end of for  
+    
+    var geojson;
+
+    d3.json("static/data/PB2002_plates.json", function(platesData){
+        console.log(platesData)
+        geojson = L.choropleth(platesData, {
+          // Define what  property in the features to use
+          valueProperty: "FeatureCollection",      
+          // Set color scale
+          scale: ["#ffffb2", "#b10026"],      
+          // Number of breaks in step range
+          steps: 10,      
+          // q for quartile, e for equidistant, k for k-means
+          mode: "q",
+          style: {
+            // Border color
+            color: "#fff",
+            weight: 1,
+            fillOpacity: 0.8
+          }          
+        })
+      
+
+    })//end of plates
 
     quakeLayer = L.layerGroup(earthQuakeMarkers);
+    geojsonLayer = L.layerGroup(geojson)
 
     var overlayMaps = {
-        EarthQuake: quakeLayer
+        EarthQuake: quakeLayer,
+        GeoJson: geojsonLayer
       };
 
     // Add the layer control to the map
@@ -94,7 +126,7 @@ d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojs
     };
     
     legend.addTo(map);
-})
+})//end of all_day.geojson
 
 // Add all the cityMarkers to a new layer group.
 // Now we can handle them as one group instead of referencing each individually
