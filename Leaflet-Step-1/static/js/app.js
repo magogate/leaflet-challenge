@@ -1,3 +1,10 @@
+/**
+ * Created By: Mandar R. Gogate
+ * Created On: 12/24/2019
+ * References:
+ * https://docs.mapbox.com/api/maps/#styles
+ * https://css-tricks.com/multiple-class-id-selectors/
+ */
 
 var earthquakeData;
 
