@@ -36,18 +36,6 @@ let earthQuakeMarkers = []
 let cityLayer;
 
 function getColor(d) {
-    return d > .25 ? '#800026' :
-           d > .5  ? '#BD0026' :
-           d > 0.75 ? '#E31A1C' :
-           d > 1.0  ? '#FC4E2A' :
-           d > 1.25 ? '#FD8D3C' :
-           d > 1.5  ? '#FEB24C' :
-           d > 1.75 ? '#FED976' :
-           d > 2    ? '#FFEDA0' :
-                    '#FFFDA0'
-}
-
-function getColor(d) {
     return d > 2 ? '#800026' :
            d > 1.75 ? '#BD0026' :
            d > 1.5  ? '#E31A1C' :
