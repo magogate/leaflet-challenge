@@ -74,58 +74,62 @@ d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojs
             // }).addTo(map);
     }//end of for  
     
-    var geojson;
+    var geojson = [];
 
     d3.json("static/data/PB2002_plates.json", function(platesData){
         console.log(platesData)
-        geojson = L.choropleth(platesData, {
+        geojson.push(L.choropleth(platesData, {
           // Define what  property in the features to use
-          valueProperty: "FeatureCollection",      
+          valueProperty: "plate",      
           // Set color scale
-          scale: ["#ffffb2", "#b10026"],      
+          // scale: ["#ffffb2", "#b10026"],      
           // Number of breaks in step range
           steps: 10,      
           // q for quartile, e for equidistant, k for k-means
           mode: "q",
           style: {
             // Border color
-            color: "#fff",
+            color: "red",
             weight: 1,
-            fillOpacity: 0.8
+            fillOpacity: 0.01
           }          
         })
-      
+        )
+        
+        geojsonLayer = L.layerGroup(geojson)
+        quakeLayer = L.layerGroup(earthQuakeMarkers);
+
+        geojsonLayer.addTo(map)
+        quakeLayer.addTo(map)
+
+
+        var overlayMaps = {
+          EarthQuake: quakeLayer,
+          GeoJson: geojsonLayer
+        };
+         // Add the layer control to the map
+        L.control.layers(baseMaps, overlayMaps).addTo(map); 
+
+        var legend = L.control({position: 'bottomright'});
+
+        legend.onAdd = function (map) {
+            var div = L.DomUtil.create('div', 'info legend'),
+                grades = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2],
+                labels = [];
+        
+            // loop through our density intervals and generate a label with a colored square for each interval
+            for (var i = 0; i < grades.length; i++) {
+                div.innerHTML +=
+                    '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+                    grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+            }    
+            return div;
+        };
+    
+      legend.addTo(map);
 
     })//end of plates
-
-    quakeLayer = L.layerGroup(earthQuakeMarkers);
-    geojsonLayer = L.layerGroup(geojson)
-
-    var overlayMaps = {
-        EarthQuake: quakeLayer,
-        GeoJson: geojsonLayer
-      };
-
-    // Add the layer control to the map
-    L.control.layers(baseMaps, overlayMaps).addTo(map); 
-
-    var legend = L.control({position: 'bottomright'});
-
-    legend.onAdd = function (map) {
-        var div = L.DomUtil.create('div', 'info legend'),
-            grades = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2],
-            labels = [];
     
-        // loop through our density intervals and generate a label with a colored square for each interval
-        for (var i = 0; i < grades.length; i++) {
-            div.innerHTML +=
-                '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
-                grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
-        }    
-        return div;
-    };
-    
-    legend.addTo(map);
 })//end of all_day.geojson
 
 // Add all the cityMarkers to a new layer group.
