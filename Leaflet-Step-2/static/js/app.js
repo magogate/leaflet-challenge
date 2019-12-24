@@ -69,7 +69,7 @@ d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojs
                 fillOpacity: 0.9,
                 radius: (earthquakeData.features[cnt].properties.mag) * 3000,
                 // blur: 35
-            })
+            }).bindPopup("Magnitude: " + earthquakeData.features[cnt].properties.mag + "<br> At location " + earthquakeData.features[cnt].properties.title)
         )
             // }).addTo(map);
     }//end of for  
